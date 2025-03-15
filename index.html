@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Summarizer & Translator</title>
+</head>
+<body>
+    <h1>Upload a Text File</h1>
+    <input type="file" id="fileInput">
+    <button onclick="uploadFile()">Process</button>
+
+    <h2>Summary:</h2>
+    <p id="summary"></p>
+    <button id="downloadSummary" style="display:none;">Download Summary</button>
+
+    <h2>Translation (Kannada):</h2>
+    <p id="translated"></p>
+    <button id="downloadTranslated" style="display:none;">Download Translation</button>
+
+    <script>
+        function uploadFile() {
+            let fileInput = document.getElementById("fileInput");
+            if (fileInput.files.length === 0) {
+                alert("Please select a file first.");
+                return;
+            }
+
+            let formData = new FormData();
+            formData.append("file", fileInput.files[0]);
+
+            fetch("/process", {
+                method: "POST",
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById("summary").innerText = data.summary;
+                document.getElementById("translated").innerText = data.translated;
+
+                let summaryButton = document.getElementById("downloadSummary");
+                summaryButton.style.display = "block";
+                summaryButton.onclick = () => {
+                    window.location.href = `/download/${data.summary_file}`;
+                };
+
+                let translatedButton = document.getElementById("downloadTranslated");
+                translatedButton.style.display = "block";
+                translatedButton.onclick = () => {
+                    window.location.href = `/download/${data.translated_file}`;
+                };
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Failed to process the file.");
+            });
+        }
+    </script>
+</body>
+</html>
